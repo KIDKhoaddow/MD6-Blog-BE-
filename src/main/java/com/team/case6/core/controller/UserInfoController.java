@@ -55,12 +55,9 @@ public class UserInfoController {
         return new ResponseEntity<>(userInfoService.findByUserId(userId), HttpStatus.OK);
     }
     @PutMapping("/{userId}")
-    public ResponseEntity<UserInfoDTO> updateProfile(@PathVariable Long userId, @ModelAttribute UserInfo userInfo) {
-        UserInfo userInfo1 = userInfoService.findByUserId(userId);
-        User user = userService.findById(userId).get();
-        userInfo.setId(userInfo1.getId());
-        userInfo.setAvatar(userInfo1.getAvatar());
-        userInfo.setUser(user);
+    public ResponseEntity<UserInfoDTO> updateProfile(@PathVariable Long userId, @RequestBody UserInfoDTO userInfoDTO) {
+        UserInfo userInfo = userInfoService.findByUserId(userId);
+       iUserMapper.updateFromDTO(userInfoDTO,userInfo);
         userInfoService.save(userInfo);
         return new ResponseEntity<>(iUserMapper.toDto(userInfo), HttpStatus.OK);
     }
