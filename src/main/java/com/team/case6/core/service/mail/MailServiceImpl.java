@@ -1,5 +1,6 @@
 package com.team.case6.core.service.mail;
 
+import com.team.case6.core.model.dto.SignUpForm;
 import com.team.case6.core.model.entity.User;
 import freemarker.template.Configuration;
 import org.springframework.stereotype.Service;
@@ -58,6 +59,11 @@ public class MailServiceImpl implements IMailService {
             System.out.println("Exception occured while processing fmtemplate:" + e.getMessage());
         }
         return "";
+    }
+
+    @Override
+    public void sendVerificationToken(String token, SignUpForm signUpForm) {
+
     }
 
     private void sendHtmlEmail(String subject, String msg, User user) {
