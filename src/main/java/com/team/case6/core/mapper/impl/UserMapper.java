@@ -24,7 +24,7 @@ public class UserMapper implements IUserMapper {
     @Override
     public UserInfoDTO toDto(UserInfo entity) {
         UserInfoDTO infoDTO=modelMapper.map(entity,UserInfoDTO.class);
-        infoDTO.setUsername(entity.getName());
+        infoDTO.setUsername(entity.getUser().getUsername());
         return infoDTO;
     }
 

@@ -75,12 +75,17 @@ public class AuthController {
         ResponseMessage message=new ResponseMessage();
         if (!user.getPassword().equals(user.getConfirmPassword())) {
             message.setMessage("Confirm-password does not match password");
+            message.setResult(false);
             return new ResponseEntity<>(message,HttpStatus.CONFLICT);
         }
         if(userService.isUsernameExist(user.getUsername())){
             message.setMessage("Registration account is duplicated");
+            message.setResult(false);
             return new ResponseEntity<>(message,HttpStatus.FOUND);
         }
+
+
+
         String avatar = "profile.png";
         User user1 = new User(user.getUsername(), user.getPassword());
 
@@ -105,6 +110,7 @@ public class AuthController {
 
         userInfoService.save(userInfo);
         message.setMessage("register complete");
+        message.setResult(true);
         return new ResponseEntity<>(message,HttpStatus.CREATED);
     }
 
