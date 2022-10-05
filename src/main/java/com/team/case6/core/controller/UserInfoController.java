@@ -17,6 +17,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -63,16 +64,9 @@ public class UserInfoController {
     }
 
     @PatchMapping("/avatar/{userId}")
-    public ResponseEntity<UserInfoDTO> editAvatar(@PathVariable Long userId, @ModelAttribute PictureForm pictureForm) {
+    public ResponseEntity<UserInfoDTO> editAvatar(@PathVariable Long userId, @RequestBody String img) {
         UserInfo userInfo = userInfoService.findByUserId(userId);
-        MultipartFile multipartFile = pictureForm.getPicture();
-        String image = multipartFile.getOriginalFilename();
-        try {
-            FileCopyUtils.copy(multipartFile.getBytes(), new File(uploadPathUser + image));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        userInfo.setAvatar(image);
+        userInfo.setAvatar(img);
         userInfoService.save(userInfo);
         return new ResponseEntity<>(iUserMapper.toDto(userInfo), HttpStatus.OK);
     }
