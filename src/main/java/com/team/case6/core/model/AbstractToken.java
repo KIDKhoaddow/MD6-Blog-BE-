@@ -33,11 +33,11 @@ public abstract class AbstractToken implements Serializable {
     private String token;
 
     @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "user_id")
+    @JoinColumn( name = "user_id")
     private User user;
 
     @OneToOne(targetEntity = SignUpForm.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "sign_up_form_id")
+    @JoinColumn( name = "sign_up_form_id")
     private SignUpForm signUpForm;
     private Date expiryDate;
 

@@ -1,7 +1,9 @@
 package com.team.case6.core.service.mail;
 
+import com.team.case6.core.config.AppProperties;
 import com.team.case6.core.model.dto.SignUpForm;
 import com.team.case6.core.model.entity.User;
+import com.team.case6.core.service.message.MessageService;
 import freemarker.template.Configuration;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
@@ -28,7 +30,7 @@ public class MailServiceImpl implements IMailService {
     public final static String BASE_URL = "baseUrl";
 
     @Autowired
-    private IMailService messageService;
+    private MessageService messageService;
 
     @Autowired
     private JavaMailSender mailSender;
@@ -47,7 +49,6 @@ public class MailServiceImpl implements IMailService {
     public void sendVerificationToken(String token, User user) {
         final String confirmationUrl = appProperties.getClient().getBaseUrl() + "verify?token=" + token;
         final String message = messageService.getMessage("message.mail.verification");
-        sendHtmlEmail("Registration Confirmation", message + LINE_BREAK + confirmationUrl, user);
     }
 
     private String geFreeMarkerTemplateContent(Map<String, Object> model, String templateName) {
@@ -63,17 +64,19 @@ public class MailServiceImpl implements IMailService {
 
     @Override
     public void sendVerificationToken(String token, SignUpForm signUpForm) {
-
+        final String confirmationUrl = appProperties.getClient().getBaseUrl() +"verify;token=" + token;
+        final String message = messageService.getMessage("message.mail.verification");
+        sendHtmlEmail("Registration Confirmation", message + LINE_BREAK + confirmationUrl, signUpForm);
     }
 
-    private void sendHtmlEmail(String subject, String msg, User user) {
+    private void sendHtmlEmail(String subject, String msg, SignUpForm signUpForm) {
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put("name", user.getDisplayName());
+        model.put("name", signUpForm.getUsername());
         model.put("msg", msg);
         model.put("title", subject);
         model.put(BASE_URL, appProperties.getClient().getBaseUrl());
         try {
-            sendHtmlMail(env.getProperty(SUPPORT_EMAIL), user.getEmail(), subject, geFreeMarkerTemplateContent(model, "mail/verification.ftl"));
+            sendHtmlMail(env.getProperty(SUPPORT_EMAIL), signUpForm.getEmail(), subject, geFreeMarkerTemplateContent(model, "mail/verification.ftl"));
         } catch (MessagingException e) {
             logger.error("Failed to send mail", e);
         }

@@ -1,4 +1,4 @@
-package com.team.case6.core.mapper;
+package com.team.case6.core.config;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;

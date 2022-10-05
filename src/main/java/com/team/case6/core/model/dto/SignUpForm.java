@@ -9,6 +9,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.util.Date;
 
 
 @Data
@@ -37,8 +38,12 @@ public class SignUpForm {
     private String about;
 
     private String birthDay;
+    @Column(name = "created_date", nullable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    protected Date createdDate;
 
-    private String registerDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    protected Date modifiedDate;
 
     private String secret;
 }
