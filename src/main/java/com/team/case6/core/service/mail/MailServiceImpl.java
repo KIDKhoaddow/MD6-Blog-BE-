@@ -1,7 +1,9 @@
 package com.team.case6.core.service.mail;
 
+import com.team.case6.core.config.AppProperties;
 import com.team.case6.core.model.dto.SignUpForm;
 import com.team.case6.core.model.entity.User;
+import com.team.case6.core.service.message.MessageService;
 import freemarker.template.Configuration;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
@@ -28,69 +30,70 @@ public class MailServiceImpl implements IMailService {
     public final static String BASE_URL = "baseUrl";
 
     @Autowired
-    private IMailService messageService;
+    private MessageService messageService;
 
-//    @Autowired
-//    private JavaMailSender mailSender;
+    @Autowired
+    private JavaMailSender mailSender;
 
     @Autowired
     private Environment env;
 
-//    @Autowired
-//    Configuration freemarkerConfiguration;
+    @Autowired
+    Configuration freemarkerConfiguration;
 
-//    @Autowired
-//    AppProperties appProperties;
-//
+    @Autowired
+    AppProperties appProperties;
+
     @Async
     @Override
     public void sendVerificationToken(String token, User user) {
-//        final String confirmationUrl = appProperties.getClient().getBaseUrl() + "verify?token=" + token;
-//        final String message = messageService.getMessage("message.mail.verification");
-//        sendHtmlEmail("Registration Confirmation", message + LINE_BREAK + confirmationUrl, user);
+        final String confirmationUrl = appProperties.getClient().getBaseUrl() + "verify?token=" + token;
+        final String message = messageService.getMessage("message.mail.verification");
+    }
+
+    private String geFreeMarkerTemplateContent(Map<String, Object> model, String templateName) {
+        StringBuffer content = new StringBuffer();
+        try {
+            content.append(FreeMarkerTemplateUtils.processTemplateIntoString(freemarkerConfiguration.getTemplate(templateName), model));
+            return content.toString();
+        } catch (Exception e) {
+            System.out.println("Exception occured while processing fmtemplate:" + e.getMessage());
+        }
+        return "";
     }
 
     @Override
     public void sendVerificationToken(String token, SignUpForm signUpForm) {
-
+        final String confirmationUrl = appProperties.getClient().getBaseUrl() +"verify;token=" + token;
+        final String message = messageService.getMessage("message.mail.verification");
+        sendHtmlEmail("Registration Confirmation", message + LINE_BREAK + confirmationUrl, signUpForm);
     }
 
-    private String geFreeMarkerTemplateContent(Map<String, Object> model, String templateName) {
-//        StringBuffer content = new StringBuffer();
-//        try {
-//            content.append(FreeMarkerTemplateUtils.processTemplateIntoString(freemarkerConfiguration.getTemplate(templateName), model));
-//            return content.toString();
-//        } catch (Exception e) {
-//            System.out.println("Exception occured while processing fmtemplate:" + e.getMessage());
-//        }
-        return "";
+    private void sendHtmlEmail(String subject, String msg, SignUpForm signUpForm) {
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("name", signUpForm.getUsername());
+        model.put("msg", msg);
+        model.put("title", subject);
+        model.put(BASE_URL, appProperties.getClient().getBaseUrl());
+        try {
+            sendHtmlMail(env.getProperty(SUPPORT_EMAIL), signUpForm.getEmail(), subject, geFreeMarkerTemplateContent(model, "mail/verification.ftl"));
+        } catch (MessagingException e) {
+            logger.error("Failed to send mail", e);
+        }
     }
-
-//    private void sendHtmlEmail(String subject, String msg, User user) {
-//        Map<String, Object> model = new HashMap<String, Object>();
-//        model.put("name", user.getDisplayName());
-//        model.put("msg", msg);
-//        model.put("title", subject);
-//        model.put(BASE_URL, appProperties.getClient().getBaseUrl());
-//        try {
-//            sendHtmlMail(env.getProperty(SUPPORT_EMAIL), user.getEmail(), subject, geFreeMarkerTemplateContent(model, "mail/verification.ftl"));
-//        } catch (MessagingException e) {
-//            logger.error("Failed to send mail", e);
-//        }
-//    }
 
     public void sendHtmlMail(String from, String to, String subject, String body) throws MessagingException {
-//        MimeMessage mail = mailSender.createMimeMessage();
-//        MimeMessageHelper helper = new MimeMessageHelper(mail, true, "UTF-8");
-//        helper.setFrom(from);
-//        if (to.contains(",")) {
-//            helper.setTo(to.split(","));
-//        } else {
-//            helper.setTo(to);
-//        }
-//        helper.setSubject(subject);
-//        helper.setText(body, true);
-//        mailSender.send(mail);
-//        logger.info("Sent mail: {0}", subject);
+        MimeMessage mail = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mail, true, "UTF-8");
+        helper.setFrom(from);
+        if (to.contains(",")) {
+            helper.setTo(to.split(","));
+        } else {
+            helper.setTo(to);
+        }
+        helper.setSubject(subject);
+        helper.setText(body, true);
+        mailSender.send(mail);
+        logger.info("Sent mail: {0}", subject);
     }
 }

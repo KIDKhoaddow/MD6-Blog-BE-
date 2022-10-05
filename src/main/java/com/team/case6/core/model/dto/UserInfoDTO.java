@@ -11,6 +11,6 @@ public class UserInfoDTO {
     private String email;
     private String avatar;
     private String about;
-    private String birthDay;
+    private String birthday;
     private String registerDate;
 }
