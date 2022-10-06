@@ -29,5 +29,5 @@ public class Blog {
     private BlogStatus blogStatus;
     @ManyToOne
     private UserInfo userInfo;
-    private Long countLike;
+    private Long countLike=0l;
 }

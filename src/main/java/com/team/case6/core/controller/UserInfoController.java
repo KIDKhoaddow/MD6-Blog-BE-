@@ -40,8 +40,8 @@ public class UserInfoController {
     @Autowired
     private IUserMapper iUserMapper;
     @GetMapping("")
-    public ResponseEntity<List<UserInfoDTO>> getListUserInfo(){
-        return new ResponseEntity<>( iUserMapper.toDto(userInfoService.findAll()), HttpStatus.OK);
+    public ResponseEntity<List<UserInfo>> getListUserInfo(){
+        return new ResponseEntity<>( userInfoService.findAll(), HttpStatus.OK);
     }
     @GetMapping("/{id}")
     public ResponseEntity<UserInfoDTO> findById(@PathVariable Long id) {
@@ -70,7 +70,7 @@ public class UserInfoController {
         userInfoService.save(userInfo);
         return new ResponseEntity<>(iUserMapper.toDto(userInfo), HttpStatus.OK);
     }
-    @PatchMapping("/ban/{id}")
+    @GetMapping("/ban/{id}")
     public ResponseEntity<UserStatus> banUser(@PathVariable Long id){
         UserStatus userStatus=userStatusService.findById(id).get();
         userStatus.setVerify(false);
@@ -78,7 +78,7 @@ public class UserInfoController {
         return new ResponseEntity<>(userStatus, HttpStatus.OK);
     }
 
-    @PatchMapping("/active/{id}")
+    @GetMapping("/active/{id}")
     public ResponseEntity<UserStatus> activeUser(@PathVariable Long id){
         UserStatus userStatus=userStatusService.findById(id).get();
         userStatus.setVerify(true);

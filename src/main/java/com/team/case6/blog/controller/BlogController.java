@@ -1,5 +1,8 @@
 package com.team.case6.blog.controller;
 
+import com.team.case6.blog.mapper.BlogMapperImpl;
+import com.team.case6.blog.mapper.IBlogMapper;
+import com.team.case6.blog.model.DTO.BlogDTO;
 import com.team.case6.blog.model.DTO.BlogMostLike;
 import com.team.case6.blog.model.DTO.BlogsOfUser;
 import com.team.case6.core.model.dto.PictureForm;
@@ -56,6 +59,9 @@ public class BlogController {
     @Value("${file-upload-blog}")
     private String uploadPathBlog;
 
+    @Autowired
+    private IBlogMapper blogMapper;
+
     @GetMapping("")
     public ResponseEntity<List<Blog>> getListBlogs() {
         return new ResponseEntity<>(blogService.findAll(), HttpStatus.OK);
@@ -100,12 +106,12 @@ public class BlogController {
                 .collect(Collectors.toList()), HttpStatus.OK);
     }
     @GetMapping("/public/most-like")
-    public ResponseEntity<List<Blog>> getTopBlogMostLike() {
+    public ResponseEntity<Blog> getTopBlogMostLike() {
         return new ResponseEntity<>(blogService.findAll().stream()
                 .sorted(Comparator.comparing(Blog::getCountLike).reversed())
                 .filter(blog-> blog.getBlogStatus().getStatus()==Status.PUBLIC)
                 .limit(1)
-                .collect(Collectors.toList()), HttpStatus.OK);
+                .collect(Collectors.toList()).get(0), HttpStatus.OK);
     }
     @GetMapping("/private")
     public ResponseEntity<List<Blog>> getListBlogPrivate() {
@@ -121,33 +127,18 @@ public class BlogController {
         return new ResponseEntity<>(blogService.findBlogsMostLike(), HttpStatus.OK);
     }
     @PostMapping("/{idUserInfo}")
-    public ResponseEntity<Blog> createBlog(@PathVariable Long idUserInfo, @RequestPart Blog blog
+    public ResponseEntity<Blog> createBlog(@PathVariable Long idUserInfo, @RequestPart BlogDTO blogDTO
             , @RequestPart("fileImage") MultipartFile multipartFile) {
         Optional<UserInfo> userInfo = userInfoService.findById(idUserInfo);
         if (!userInfo.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        if (!multipartFile.isEmpty()) {
-            String fileName = StringUtils.cleanPath(Objects.requireNonNull(multipartFile.getOriginalFilename()));
-            String uploadDir = "/image";
-            Path uploadPath = Paths.get(uploadDir);
-            blog.setPicture(fileName);
-            if (!Files.exists(uploadPath)) {
-                try {
-                    Files.createDirectories(uploadPath);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            try {
-                InputStream inputStream = multipartFile.getInputStream();
-                Path filePath = uploadPath.resolve(fileName);
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-                System.out.println(filePath.toFile().getAbsolutePath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        Blog blog=new Blog();
+        blogMapper.updateFromDTO(blogDTO,blog);
+        blog.setCategory(categorySV.findByName(blogDTO.getCategory()).get());
+
+
+
 //lấy thông số ngày tháng năm khởi tạo
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter fmt1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");

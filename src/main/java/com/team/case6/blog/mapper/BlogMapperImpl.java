@@ -4,10 +4,11 @@ import com.team.case6.blog.model.DTO.BlogDTO;
 import com.team.case6.blog.model.entity.Blog;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Service
 public class BlogMapperImpl implements IBlogMapper {
     @Autowired
     private ModelMapper modelMapper;
