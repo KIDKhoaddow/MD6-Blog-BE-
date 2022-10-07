@@ -17,12 +17,12 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private  String content;
-    private  String createAt;
+    private String content;
+    private String createAt;
     @ManyToOne
     private UserInfo userInfo;
     @ManyToOne
     private Blog blog;
     @ManyToOne
-    private Comment commentParent ;
+    private Comment commentParent;
 }

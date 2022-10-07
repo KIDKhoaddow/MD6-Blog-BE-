@@ -135,17 +135,17 @@ public class BlogController {
         }
         Blog blog=new Blog();
         blogMapper.updateFromDTO(blogDTO,blog);
-        blog.setCategory(categorySV.findByName(blogDTO.getCategory()).get());
+        blog.setCategory(categorySV.findById(blogDTO.getCategory()).get());
 
 
 
-//lấy thông số ngày tháng năm khởi tạo
+        //lấy thông số ngày tháng năm khởi tạo
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter fmt1 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         localDate.format(fmt1);
         String userRegisDate = String.valueOf(localDate);
         blog.setCreateAt(userRegisDate);
-//Lưu vào database
+        //Lưu vào database
 
         BlogStatus blogStatus = new BlogStatus();
         blogStatusService.save(blogStatus);

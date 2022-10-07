@@ -25,7 +25,7 @@ public class UserInfo {
     @Lob
     private String about;
 
-    private String birthDay;
+    private String birthday;
 
     private String registerDate;
 
@@ -34,12 +34,12 @@ public class UserInfo {
     @OneToOne
     private User user;
 
-    public UserInfo(String name, String email, String avatar, String about, String birthDay, String registerDate, UserStatus userStatus, User user) {
+    public UserInfo(String name, String email, String avatar, String about, String birthday, String registerDate, UserStatus userStatus, User user) {
         this.name = name;
         this.email = email;
         this.avatar = avatar;
         this.about = about;
-        this.birthDay = birthDay;
+        this.birthday = birthday;
         this.registerDate = registerDate;
         this.userStatus = userStatus;
         this.user = user;
