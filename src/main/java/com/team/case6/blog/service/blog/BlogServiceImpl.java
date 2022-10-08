@@ -45,6 +45,11 @@ public class BlogServiceImpl implements IBlogService {
     }
 
     @Override
+    public List<Blog> findAllByCategory(Category category) {
+        return iBlogRepo.findAllByCategory(category);
+    }
+
+    @Override
     public List<BlogsOfUser> findBlogsOfUser() {
         return iBlogRepo.findBlogsOfUser();
     }

@@ -9,4 +9,5 @@ import java.util.List;
 public interface ICommentService extends IGeneralService<Comment> {
 
     List<Comment> findAllByBlog_Id(Long blogId);
+    Long getCountCommentByBlogId(Long blogId);
 }

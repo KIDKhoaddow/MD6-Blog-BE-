@@ -16,7 +16,7 @@ import java.util.Optional;
 @Repository
 public interface ILikeRepo extends JpaRepository<Like, Long> {
 
-    Optional<Like> findAllByBlogAndAndUserInfo(Blog blog, UserInfo userInfo);
+    Optional<Like> findAllByBlogAndUserInfo(Blog blog, UserInfo userInfo);
 
     List<Like> findAllByBlog_Id(Long blogId);
 

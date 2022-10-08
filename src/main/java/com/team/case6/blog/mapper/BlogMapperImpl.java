@@ -24,7 +24,7 @@ public class BlogMapperImpl implements IBlogMapper {
     @Override
     public BlogDTO toDto(Blog entity) {
         BlogDTO blogDTO = modelMapper.map(entity, BlogDTO.class);
-        blogDTO.setCategory(entity.getCategory().getId());
+        blogDTO.setCategoryName(entity.getCategory().getId());
         blogDTO.setStatus(entity.getBlogStatus().getStatus());
         blogDTO.setUsername(entity.getUserInfo().getUser().getUsername());
         return blogDTO;

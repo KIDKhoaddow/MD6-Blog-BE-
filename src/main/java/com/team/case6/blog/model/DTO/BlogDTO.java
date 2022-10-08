@@ -13,7 +13,7 @@ import java.util.Set;
 public class BlogDTO {
     private Long id;
     private String username;
-    private Long category;
+    private Long categoryName;
     private String title;
     private String describes;
     private String content;
@@ -21,6 +21,7 @@ public class BlogDTO {
     private String createAt;
     private Status status;
     private Long countLike;
+    private Long countComment;
     private String updateAt;
     private Set<Long> tag;
 }
