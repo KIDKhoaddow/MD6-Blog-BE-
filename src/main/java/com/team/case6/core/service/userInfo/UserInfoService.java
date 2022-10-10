@@ -15,22 +15,26 @@ public class UserInfoService implements IUserInfoService {
     private IUserInfoRepo userInfoRepository;
 
     @Override
-    public List<UserInfo> findAll() {
+    public List<UserInfo> findAll()
+    {
         return userInfoRepository.findAll();
     }
 
     @Override
-    public UserInfo save(UserInfo userInfo) {
+    public UserInfo save(UserInfo userInfo)
+    {
         return userInfoRepository.save(userInfo);
     }
 
     @Override
-    public void removeById(Long id) {
+    public void removeById(Long id)
+    {
         userInfoRepository.deleteById(id);
     }
 
     @Override
-    public Optional<UserInfo> findById(Long id) {
+    public Optional<UserInfo> findById(Long id)
+    {
         return userInfoRepository.findById(id);
     }
 
@@ -40,12 +44,14 @@ public class UserInfoService implements IUserInfoService {
     }
 
     @Override
-    public Long findUserByUserInfo(Long id) {
+    public Long findUserByUserInfo(Long id)
+    {
         return userInfoRepository.findUserByUserInfo(id);
     }
 
     @Override
-    public boolean existByEmail(String email) {
+    public boolean existByEmail(String email)
+    {
         return userInfoRepository.existsByEmail(email);
     }
 }

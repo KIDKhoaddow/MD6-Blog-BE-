@@ -39,6 +39,7 @@ public class UserInfoController {
     private String uploadPathUser;
     @Autowired
     private IUserMapper iUserMapper;
+
     @GetMapping("")
     public ResponseEntity<List<UserInfoDTO>> getListUserInfo(){
         return new ResponseEntity<>( iUserMapper.toDto(userInfoService.findAll()), HttpStatus.OK);
@@ -92,5 +93,5 @@ public class UserInfoController {
         userInfoService.removeById(userInfo1.getId());
         return new ResponseEntity<>( HttpStatus.OK);
     }
-
 }
+
