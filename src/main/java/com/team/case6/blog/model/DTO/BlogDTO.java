@@ -4,6 +4,7 @@ import com.team.case6.blog.model.entity.BlogStatus;
 import com.team.case6.category.model.Category;
 import com.team.case6.core.model.entity.Status;
 import com.team.case6.core.model.entity.UserInfo;
+import com.team.case6.tag.model.TagDTO;
 import lombok.Data;
 
 import java.util.Set;
@@ -13,7 +14,9 @@ import java.util.Set;
 public class BlogDTO {
     private Long id;
     private String username;
-    private Long categoryName;
+    private String avatar;
+    private Long categoryId;
+    private String categoryName;
     private String title;
     private String describes;
     private String content;
@@ -23,5 +26,5 @@ public class BlogDTO {
     private Long countLike;
     private Long countComment;
     private String updateAt;
-    private Set<Long> tag;
+    private Set<TagDTO> tag;
 }

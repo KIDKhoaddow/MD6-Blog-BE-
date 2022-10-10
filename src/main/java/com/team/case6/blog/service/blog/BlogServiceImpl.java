@@ -75,6 +75,6 @@ public class BlogServiceImpl implements IBlogService {
 
     @Override
     public List<Blog> findBlogPublicByCategory(Category category) {
-        return iBlogRepo.findAll().stream().filter(b->b.getCategory().equals(category)&&b.getBlogStatus().getStatus().equals(Status.PUBLIC)).collect(Collectors.toList());
+        return iBlogRepo.findAll().stream().filter(b->b.getCategory()==category && b.getBlogStatus().getStatus().equals(Status.PUBLIC)).collect(Collectors.toList());
     }
 }

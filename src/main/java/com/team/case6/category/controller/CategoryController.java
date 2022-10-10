@@ -27,7 +27,7 @@ public class CategoryController {
     @GetMapping("")
     public ResponseEntity<List<CategoryDTO>> getListCategory() {
         for (Category element: categorySV.findAll()) {
-            int numberBLog=blogService.findAllByCategory(element).size();
+            int numberBLog=blogService.findBlogPublicByCategory(element).size();
             element.setCountBlog(Long.parseLong(String.valueOf(numberBLog)));
             categorySV.save(element);
         }
