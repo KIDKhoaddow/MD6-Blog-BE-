@@ -1,5 +1,8 @@
 package com.team.case6.category.controller;
 
+import com.team.case6.blog.service.blog.IBlogService;
+import com.team.case6.category.mapper.ICategoryMapper;
+import com.team.case6.category.model.CategoryDTO;
 import com.team.case6.core.model.dto.PictureForm;
 import com.team.case6.category.model.Category;
 import com.team.case6.category.service.ICategoryService;
@@ -16,10 +19,19 @@ import java.util.List;
 public class CategoryController {
     @Autowired
     private ICategoryService categorySV;
+    @Autowired
+    private IBlogService blogService;
+    @Autowired
+    private ICategoryMapper categoryMapper;
 
     @GetMapping("")
-    public ResponseEntity<List<Category>> getListCategory() {
-        return new ResponseEntity<>(categorySV.findAll(), HttpStatus.OK);
+    public ResponseEntity<List<CategoryDTO>> getListCategory() {
+        for (Category element: categorySV.findAll()) {
+            int numberBLog=blogService.findBlogPublicByCategory(element).size();
+            element.setCountBlog(Long.parseLong(String.valueOf(numberBLog)));
+            categorySV.save(element);
+        }
+        return new ResponseEntity<>(categoryMapper.toDto(categorySV.findAll()), HttpStatus.OK);
     }
     @GetMapping("/{idCategory}")
     public ResponseEntity<Category> getCategory(@PathVariable Long idCategory) {

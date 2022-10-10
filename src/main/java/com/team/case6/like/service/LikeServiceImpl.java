@@ -41,7 +41,7 @@ public class LikeServiceImpl implements ILikeService{
 
     @Override
     public Optional<Like> findAllByBlogAndAndUserInfo(Blog blog, UserInfo userInfo) {
-        return likeRepo.findAllByBlogAndAndUserInfo(blog,userInfo);
+        return likeRepo.findAllByBlogAndUserInfo(blog,userInfo);
     }
 
     @Override

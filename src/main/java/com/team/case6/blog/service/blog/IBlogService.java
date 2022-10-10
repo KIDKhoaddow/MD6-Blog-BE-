@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface IBlogService extends IGeneralService<Blog> {
     List<Blog> findAllByCategory_Name(String categoryName);
+    List<Blog> findAllByCategory(Category category);
     List<Blog> findAllByUserInfo(UserInfo userInfo);
     List<BlogsOfUser> findBlogsOfUser();
     List<BlogMostLike> findBlogsMostLike();

@@ -2,10 +2,15 @@ package com.team.case6.blog.model.entity;
 
 import com.team.case6.category.model.Category;
 import com.team.case6.core.model.entity.UserInfo;
+import com.team.case6.tag.model.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "blogs")
@@ -29,5 +34,9 @@ public class Blog {
     private BlogStatus blogStatus;
     @ManyToOne
     private UserInfo userInfo;
-    private Long countLike;
+    private Long countLike = 0L;
+    private Long countComment=0L;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "tag_blog")
+    private Set<Tag> tag = new HashSet<>();
 }

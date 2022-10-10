@@ -37,4 +37,9 @@ public class CommentServiceImpl implements ICommentService{
     public List<Comment> findAllByBlog_Id(Long blogId) {
         return commentRepo.findAllByBlog_Id(blogId );
     }
+
+    @Override
+    public Long getCountCommentByBlogId(Long blogId) {
+        return commentRepo.countCommentByBlog_Id(blogId);
+    }
 }

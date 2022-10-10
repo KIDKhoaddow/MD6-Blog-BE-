@@ -44,13 +44,13 @@ public class CommentController {
         return new ResponseEntity<>(comment, HttpStatus.OK);
     }
 
-    @GetMapping("/listComment/{idBlog}")
+    @GetMapping("/{idBlog}")
     public ResponseEntity<List<Comment>> getCommentByBlogId(@PathVariable Long idBlog) {
         return new ResponseEntity<>(commentService.findAllByBlog_Id(idBlog), HttpStatus.OK);
     }
 
-    @GetMapping("/listCountComment/{idBlog}")
-    public ResponseEntity<?> countListCommentByBlogId(@PathVariable Long idBlog) {
+    @GetMapping("/count/{idBlog}")
+    public ResponseEntity<Integer> countListCommentByBlogId(@PathVariable Long idBlog) {
         return new ResponseEntity<>(commentService.findAllByBlog_Id(idBlog).size(), HttpStatus.OK);
     }
 

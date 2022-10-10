@@ -3,6 +3,7 @@ package com.team.case6.blog.repository;
 
 import com.team.case6.blog.model.DTO.BlogMostLike;
 import com.team.case6.blog.model.DTO.BlogsOfUser;
+import com.team.case6.category.model.Category;
 import com.team.case6.core.model.dto.LikeCount;
 import com.team.case6.blog.model.entity.Blog;
 import com.team.case6.core.model.entity.UserInfo;
@@ -15,6 +16,7 @@ import java.util.List;
 @Repository
 public interface IBlogRepo extends JpaRepository<Blog, Long> {
     List<Blog> findAllByCategory_Name(String categoryName);
+    List<Blog> findAllByCategory(Category category);
 
     List<Blog> findAllByUserInfo(UserInfo userInfo);
 

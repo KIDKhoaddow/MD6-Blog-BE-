@@ -2,15 +2,20 @@ package com.team.case6.blog.mapper;
 
 import com.team.case6.blog.model.DTO.BlogDTO;
 import com.team.case6.blog.model.entity.Blog;
+import com.team.case6.tag.mapper.ITagMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Service
 public class BlogMapperImpl implements IBlogMapper {
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private ITagMapper tagMapper;
 
     @Override
     public Blog toEntity(BlogDTO dto) {
@@ -20,8 +25,12 @@ public class BlogMapperImpl implements IBlogMapper {
     @Override
     public BlogDTO toDto(Blog entity) {
         BlogDTO blogDTO = modelMapper.map(entity, BlogDTO.class);
+        blogDTO.setCategoryId(entity.getCategory().getId());
+        blogDTO.setCategoryName(entity.getCategory().getName());
         blogDTO.setStatus(entity.getBlogStatus().getStatus());
-        blogDTO.setUsername(entity.getUserInfo().getUser().getUsername());
+        blogDTO.setAvatar(entity.getUserInfo().getAvatar());
+        blogDTO.setUsername(entity.getUserInfo().getName());
+        blogDTO.setTag(tagMapper.toDto(entity.getTag()));
         return blogDTO;
     }
 
