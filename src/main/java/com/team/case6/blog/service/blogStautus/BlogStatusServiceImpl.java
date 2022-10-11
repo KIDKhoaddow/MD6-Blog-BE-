@@ -31,4 +31,10 @@ public class BlogStatusServiceImpl implements IBlogStatusService {
     public Optional<BlogStatus> findById(Long id) {
         return iBlogStatusRepo.findById(id);
     }
+
+
+    @Override
+    public Optional<BlogStatus> findByBlogId(Long blogId) {
+        return Optional.empty();
+    }
 }

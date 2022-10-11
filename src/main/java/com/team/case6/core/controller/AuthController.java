@@ -81,8 +81,10 @@ public class AuthController {
         UserInfo userInfo = userInfoService.findByUserId(currentUser.getId());
         UserStatus userStatus = userInfo.getUserStatus();
         if (!userStatus.isVerify()) {
-
             return new ResponseEntity<>(new ResponseMessage(false, "You are banned by Admin"), HttpStatus.LOCKED);
+        }
+        if(userStatus.getStatus().equals(Status.ONLINE)){
+            return new ResponseEntity<>(new ResponseMessage(false, "This account are Login already"), HttpStatus.CONFLICT);
         }
         userStatus.setStatus(Status.ONLINE);
         userStatusService.save(userStatus);

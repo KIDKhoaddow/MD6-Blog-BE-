@@ -5,6 +5,7 @@ import com.team.case6.category.model.CategoryDTO;
 import com.team.case6.tag.mapper.ITagMapper;
 import com.team.case6.tag.model.Tag;
 import com.team.case6.tag.model.TagDTO;
+import com.team.case6.tag.service.ITagService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,8 @@ public class CategoryMapperImpl implements ICategoryMapper {
     private ModelMapper modelMapper;
     @Autowired
     private ITagMapper iTagMapper;
+
+    private ITagService tagService;
     @Override
     public Category toEntity(CategoryDTO dto) {
         return null;
@@ -26,10 +29,10 @@ public class CategoryMapperImpl implements ICategoryMapper {
 
     @Override
     public CategoryDTO toDto(Category entity) {
-        Set<TagDTO> tagDTOSet= iTagMapper.toDto(entity.getTag());
+//        Set<TagDTO> tagDTOSet= iTagMapper.toDto(tagService.findAllByCategory(entity));
         CategoryDTO categoryDTO=new CategoryDTO();
         modelMapper.map(entity,categoryDTO);
-        categoryDTO.setTagDTO(tagDTOSet);
+//        categoryDTO.setTagDTO(tagDTOSet);
         return categoryDTO  ;
     }
 
