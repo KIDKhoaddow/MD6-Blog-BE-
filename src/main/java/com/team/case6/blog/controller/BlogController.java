@@ -12,6 +12,7 @@ import com.team.case6.core.model.dto.PictureForm;
 import com.team.case6.blog.model.entity.Blog;
 import com.team.case6.blog.model.entity.BlogStatus;
 import com.team.case6.category.model.Category;
+import com.team.case6.core.model.dto.ResponseMessage;
 import com.team.case6.core.model.entity.Status;
 import com.team.case6.core.model.entity.UserInfo;
 import com.team.case6.blog.service.blog.IBlogService;
@@ -224,10 +225,10 @@ public class BlogController {
     }
 
     @PostMapping("/{idUserInfo}")
-    public ResponseEntity<Blog> createBlog(@PathVariable Long idUserInfo, @RequestBody BlogDTO blogDTO) {
+    public ResponseEntity<?> createBlog(@PathVariable Long idUserInfo, @RequestBody BlogDTO blogDTO) {
         Optional<UserInfo> userInfo = userInfoService.findById(idUserInfo);
         if (!userInfo.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>( new ResponseMessage(false,"Not found user "),HttpStatus.NOT_FOUND);
         }
         Blog blog = new Blog();
         blogMapper.updateFromDTO(blogDTO, blog);
@@ -280,7 +281,6 @@ public class BlogController {
         Long countLike = blogOptional.get().getCountLike();
         Long countComment = blogOptional.get().getCountComment();
         blogMapper.updateFromDTO(blog, blogOptional.get());
-
 
         blogOptional.get().setCountComment(countComment);
         blogOptional.get().setCountLike(countLike);
