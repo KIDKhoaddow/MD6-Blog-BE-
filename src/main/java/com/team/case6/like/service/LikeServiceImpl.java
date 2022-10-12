@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class LikeServiceImpl implements ILikeService{
+public class LikeServiceImpl implements ILikeService {
 
     @Autowired
     private ILikeRepo likeRepo;
@@ -41,7 +41,7 @@ public class LikeServiceImpl implements ILikeService{
 
     @Override
     public Optional<Like> findAllByBlogAndAndUserInfo(Blog blog, UserInfo userInfo) {
-        return likeRepo.findAllByBlogAndUserInfo(blog,userInfo);
+        return likeRepo.findAllByBlogAndUserInfo(blog, userInfo);
     }
 
     @Override
@@ -55,8 +55,18 @@ public class LikeServiceImpl implements ILikeService{
     }
 
     @Override
-    public void deleteLikeByBlogId(Long blogId) {
-        likeRepo.deleteLikeByBlogId(blogId);
+    public void deleteLikeByBlog(Blog blog) {
+        List<Like> list = likeRepo.findAllByBlog_Id(blog.getId());
+        if (!list.isEmpty()) {
+            for (Like like : list) {
+                try {
+                    likeRepo.deleteById(like.getId());
+                } catch (Exception e) {
+                    System.out.println(e);
+                    return;
+                }
+            }
+        }
     }
 
     @Override

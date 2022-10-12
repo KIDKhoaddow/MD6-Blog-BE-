@@ -10,4 +10,6 @@ public interface ICommentService extends IGeneralService<Comment> {
 
     List<Comment> findAllByBlog_Id(Long blogId);
     Long getCountCommentByBlogId(Long blogId);
+
+    void deleteBlog(Long blogId);
 }

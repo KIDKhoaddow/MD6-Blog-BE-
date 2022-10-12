@@ -1,14 +1,12 @@
 package com.team.case6.blog.controller;
 
-import com.team.case6.blog.mapper.BlogMapperImpl;
+
 import com.team.case6.blog.mapper.IBlogMapper;
 import com.team.case6.blog.model.DTO.BlogDTO;
 import com.team.case6.blog.model.DTO.BlogDTORecentlyPerCategory;
 import com.team.case6.blog.model.DTO.BlogMostLike;
 import com.team.case6.blog.model.DTO.BlogsOfUser;
-import com.team.case6.category.model.CategoryDTO;
 import com.team.case6.comment.service.ICommentService;
-import com.team.case6.core.model.dto.PictureForm;
 import com.team.case6.blog.model.entity.Blog;
 import com.team.case6.blog.model.entity.BlogStatus;
 import com.team.case6.category.model.Category;
@@ -23,23 +21,13 @@ import com.team.case6.core.service.userInfo.IUserInfoService;
 import com.team.case6.tag.model.Tag;
 import com.team.case6.tag.model.TagDTO;
 import com.team.case6.tag.service.ITagService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -111,7 +99,7 @@ public class BlogController {
 
     @GetMapping("/public")
     public ResponseEntity<List<BlogDTO>> getListBlogPublic() {
-        return new ResponseEntity<>(blogMapper.toDto( blogService.findBlogPublic()), HttpStatus.OK);
+        return new ResponseEntity<>(blogMapper.toDto(blogService.findBlogPublic()), HttpStatus.OK);
     }
 
     @GetMapping("/public/category/{idCategory}")
@@ -228,7 +216,7 @@ public class BlogController {
     public ResponseEntity<?> createBlog(@PathVariable Long idUserInfo, @RequestBody BlogDTO blogDTO) {
         Optional<UserInfo> userInfo = userInfoService.findById(idUserInfo);
         if (!userInfo.isPresent()) {
-            return new ResponseEntity<>( new ResponseMessage(false,"Not found user "),HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ResponseMessage(false, "Not found user "), HttpStatus.NOT_FOUND);
         }
         Blog blog = new Blog();
         blogMapper.updateFromDTO(blogDTO, blog);
@@ -370,13 +358,43 @@ public class BlogController {
 
     }
 
-    @DeleteMapping("/delete/{idBlog}")
-    public ResponseEntity<UserInfo> deleteByUserInfo(@PathVariable Long idBlog) {
-        BlogStatus blogStatus = blogService.findById(idBlog).get().getBlogStatus();
-        blogStatusService.removeById(blogStatus.getId());
-        likeService.deleteLikeByBlogId(idBlog);
-        blogService.removeById(idBlog);
-        return new ResponseEntity<>(HttpStatus.OK);
+    @DeleteMapping("/{idBlog}/{idUserInfo}")
+    public ResponseEntity<?> deleteByUserInfo(@PathVariable Long idBlog,@PathVariable Long idUserInfo) {
+        try {
+            Optional<Blog> optionalBlog = blogService.findById(idBlog);
+            if (!optionalBlog.isPresent()) {
+                return new ResponseEntity<>(new ResponseMessage(false, "Not found blog"), HttpStatus.NOT_FOUND);
+            }
+            Blog blog = optionalBlog.get();
+
+            Optional<UserInfo> optionalUserInfo = userInfoService.findById(idBlog);
+            if (!optionalUserInfo.isPresent()) {
+                return new ResponseEntity<>(new ResponseMessage(false, "Not found user"), HttpStatus.NOT_FOUND);
+            }
+            UserInfo userInfo = optionalUserInfo.get();
+            if (!blogService.existsByUserInfo(userInfo)) {
+                return new ResponseEntity<>(new ResponseMessage(false, "User is not author of Blog"), HttpStatus.NOT_FOUND);
+            }
+            BlogStatus blogStatus = blogService.findById(idBlog).get().getBlogStatus();
+            blogStatusService.removeById(blogStatus.getId());
+            likeService.deleteLikeByBlog(blog);
+            commentService.deleteBlog(idBlog);
+            List<Tag> tags = tagService.findAll();
+            if (!tags.isEmpty()) {
+                for (Tag element : tags) {
+                    if (element.getBlog().contains(blog)) {
+                        if (element.getBlog().remove(blog)) {
+                            tagService.save(element);
+                        }
+                    }
+                }
+            }
+            blogService.removeById(idBlog);
+        }catch (Exception e){
+            System.out.println(e);
+            return new ResponseEntity<>(new ResponseMessage(false, "false to remove "), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(new ResponseMessage(true, "Delete complete"),HttpStatus.OK);
     }
 
     private String getUpdateAt() {

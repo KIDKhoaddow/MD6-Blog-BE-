@@ -10,8 +10,12 @@ import java.util.Optional;
 import java.util.Set;
 @Repository
 public interface ITagRepo extends JpaRepository<Tag,Long> {
-    Set<Tag> findAllByBlog(Blog blog);
+    Set<Tag> findAllByBlogContaining(Blog blog);
     Set<Tag> findAllByCategory(Category category);
 
     Optional<Tag> findByName(String name);
+
+
+
+
 }

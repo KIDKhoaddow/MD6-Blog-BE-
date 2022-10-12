@@ -23,7 +23,7 @@ public class TagServiceImpl implements ITagService {
 
     @Override
     public Set<Tag> findAllByBlog(Blog blog) {
-        return tagRepo.findAllByBlog(blog);
+        return tagRepo.findAllByBlogContaining(blog);
     }
 
     @Override

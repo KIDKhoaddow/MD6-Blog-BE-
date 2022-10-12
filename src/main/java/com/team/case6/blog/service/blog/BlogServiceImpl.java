@@ -77,4 +77,9 @@ public class BlogServiceImpl implements IBlogService {
     public List<Blog> findBlogPublicByCategory(Category category) {
         return iBlogRepo.findAll().stream().filter(b->b.getCategory()==category && b.getBlogStatus().getStatus().equals(Status.PUBLIC)&&b.getBlogStatus().isConfirm()).collect(Collectors.toList());
     }
+
+    @Override
+    public boolean existsByUserInfo(UserInfo userInfo) {
+        return iBlogRepo.existsByUserInfo(userInfo);
+    }
 }

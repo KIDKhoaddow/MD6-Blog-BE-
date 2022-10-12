@@ -19,4 +19,5 @@ public interface IBlogService extends IGeneralService<Blog> {
     List<Blog> findBlogPublic();
      List<Blog> findBlogPrivate();
     List<Blog> findBlogPublicByCategory(Category category);
+    boolean existsByUserInfo(UserInfo userInfo);
 }
