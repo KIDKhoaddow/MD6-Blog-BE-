@@ -127,13 +127,13 @@ public class BlogController {
     }
 
     @GetMapping("/public/most-like")
-    public ResponseEntity<BlogDTO> getTopBlogMostLike() {
+    public ResponseEntity<List<BlogDTO>> getTopBlogMostLike() {
         return new ResponseEntity<>(blogMapper
                 .toDto(blogService.findAll().stream()
                         .sorted(Comparator.comparing(Blog::getCountLike).reversed())
                         .filter(blog -> blog.getBlogStatus().getStatus() == Status.PUBLIC && blog.getBlogStatus().isConfirm())
                         .limit(1)
-                        .collect(Collectors.toList()).get(0)), HttpStatus.OK);
+                        .collect(Collectors.toList())), HttpStatus.OK);
     }
 
     @GetMapping("/public/most-like-per-category")
@@ -265,6 +265,7 @@ public class BlogController {
         if (!userInfo.isPresent() || !blogOptional.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
         BlogStatus blogStatus = blogOptional.get().getBlogStatus();
         Long countLike = blogOptional.get().getCountLike();
         Long countComment = blogOptional.get().getCountComment();
@@ -367,7 +368,7 @@ public class BlogController {
             }
             Blog blog = optionalBlog.get();
 
-            Optional<UserInfo> optionalUserInfo = userInfoService.findById(idBlog);
+            Optional<UserInfo> optionalUserInfo = userInfoService.findById(idUserInfo);
             if (!optionalUserInfo.isPresent()) {
                 return new ResponseEntity<>(new ResponseMessage(false, "Not found user"), HttpStatus.NOT_FOUND);
             }

@@ -28,7 +28,7 @@ public class TagServiceImpl implements ITagService {
 
     @Override
     public Set<Tag> findAllByCategory(Category category) {
-        return tagRepo.findAllByCategory(category);
+        return tagRepo.findAllByCategoryContaining(category);
     }
 
     @Override

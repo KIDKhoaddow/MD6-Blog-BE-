@@ -8,13 +8,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.Set;
+
 @Repository
-public interface ITagRepo extends JpaRepository<Tag,Long> {
+public interface ITagRepo extends JpaRepository<Tag, Long> {
     Set<Tag> findAllByBlogContaining(Blog blog);
-    Set<Tag> findAllByCategory(Category category);
+
+    Set<Tag> findAllByCategoryContaining(Category category);
 
     Optional<Tag> findByName(String name);
-
 
 
 

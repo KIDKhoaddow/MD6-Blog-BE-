@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Service
 public class BlogMapperImpl implements IBlogMapper {
     @Autowired
@@ -17,7 +18,7 @@ public class BlogMapperImpl implements IBlogMapper {
 
     @Autowired
     private ITagMapper tagMapper;
-
+    @Autowired
     private ITagService tagService;
 
     @Override
@@ -33,14 +34,14 @@ public class BlogMapperImpl implements IBlogMapper {
         blogDTO.setStatus(entity.getBlogStatus().getStatus());
         blogDTO.setAvatar(entity.getUserInfo().getAvatar());
         blogDTO.setUsername(entity.getUserInfo().getName());
-//        blogDTO.setTag(tagMapper.toDto(tagService.findAllByBlog(entity)));
+        blogDTO.setTag(tagMapper.toDto(tagService.findAllByBlog(entity)));
         return blogDTO;
     }
 
     @Override
     public List<Blog> toEntity(List<BlogDTO> dtoList) {
-        List<Blog> blogs=new ArrayList<>();
-        for (BlogDTO element:dtoList) {
+        List<Blog> blogs = new ArrayList<>();
+        for (BlogDTO element : dtoList) {
             blogs.add(toEntity(element));
         }
         return blogs;
@@ -48,8 +49,8 @@ public class BlogMapperImpl implements IBlogMapper {
 
     @Override
     public List<BlogDTO> toDto(List<Blog> entityList) {
-        List<BlogDTO> blogs=new ArrayList<>();
-        for (Blog element:entityList) {
+        List<BlogDTO> blogs = new ArrayList<>();
+        for (Blog element : entityList) {
             blogs.add(toDto(element));
         }
         return blogs;
@@ -58,7 +59,7 @@ public class BlogMapperImpl implements IBlogMapper {
 
     @Override
     public void updateFromDTO(BlogDTO dto, Blog entity) {
-        modelMapper.map(dto,entity);
+        modelMapper.map(dto, entity);
         entity.setCountLike(0L);
         entity.setCountComment(0L);
     }

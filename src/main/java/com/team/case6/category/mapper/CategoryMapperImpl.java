@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 @Service
 public class CategoryMapperImpl implements ICategoryMapper {
     @Autowired
@@ -22,6 +23,7 @@ public class CategoryMapperImpl implements ICategoryMapper {
     private ITagMapper iTagMapper;
 
     private ITagService tagService;
+
     @Override
     public Category toEntity(CategoryDTO dto) {
         return null;
@@ -29,11 +31,11 @@ public class CategoryMapperImpl implements ICategoryMapper {
 
     @Override
     public CategoryDTO toDto(Category entity) {
-//        Set<TagDTO> tagDTOSet= iTagMapper.toDto(tagService.findAllByCategory(entity));
-        CategoryDTO categoryDTO=new CategoryDTO();
-        modelMapper.map(entity,categoryDTO);
-//        categoryDTO.setTagDTO(tagDTOSet);
-        return categoryDTO  ;
+        Set<TagDTO> tagDTOSet = iTagMapper.toDto(tagService.findAllByCategory(entity));
+        CategoryDTO categoryDTO = new CategoryDTO();
+        modelMapper.map(entity, categoryDTO);
+        categoryDTO.setTagDTO(tagDTOSet);
+        return categoryDTO;
     }
 
     @Override
@@ -43,7 +45,7 @@ public class CategoryMapperImpl implements ICategoryMapper {
 
     @Override
     public List<CategoryDTO> toDto(List<Category> entityList) {
-        List<CategoryDTO> list=new ArrayList<>();
+        List<CategoryDTO> list = new ArrayList<>();
         for (Category element : entityList) {
             list.add(toDto(element));
         }

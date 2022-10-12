@@ -1,7 +1,10 @@
 package com.team.case6.comment.controller;
 
 import com.team.case6.blog.model.entity.Blog;
+import com.team.case6.comment.mapper.ICommentMapper;
 import com.team.case6.comment.model.Comment;
+import com.team.case6.comment.model.CommentDTO;
+import com.team.case6.core.model.dto.ResponseMessage;
 import com.team.case6.core.model.entity.UserInfo;
 import com.team.case6.blog.service.blog.IBlogService;
 import com.team.case6.blog.service.blogStautus.IBlogStatusService;
@@ -30,23 +33,23 @@ public class CommentController {
     @Autowired
     private ICommentService commentService;
 
-    @PostMapping("/{idBlog}/{idUserInfo}")
-    public ResponseEntity<?> createComment(@PathVariable Long idBlog, @PathVariable Long idUserInfo, @RequestBody Comment comment) {
-        Optional<UserInfo> userInfo = userInfoService.findById(idUserInfo);
-        Optional<Blog> blog = blogService.findById(idBlog);
-        if (!userInfo.isPresent() || !blog.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    @Autowired
+    private ICommentMapper commentMapper;
+
+    @PostMapping("")
+    public ResponseEntity<?> createComment(@RequestBody CommentDTO commentDTO) {
+        Comment comment = commentMapper.toEntity(commentDTO);
+        if (comment == null) {
+            return new ResponseEntity<>(new ResponseMessage(false, "fail"), HttpStatus.NOT_FOUND);
         }
-        comment.setBlog(blog.get());
-        comment.setUserInfo(userInfo.get());
         comment.setCreateAt(getUpdateAt());
         commentService.save(comment);
-        return new ResponseEntity<>(comment, HttpStatus.OK);
+        return new ResponseEntity<>(commentDTO, HttpStatus.OK);
     }
 
     @GetMapping("/{idBlog}")
-    public ResponseEntity<List<Comment>> getCommentByBlogId(@PathVariable Long idBlog) {
-        return new ResponseEntity<>(commentService.findAllByBlog_Id(idBlog), HttpStatus.OK);
+    public ResponseEntity<List<CommentDTO>> getCommentByBlogId(@PathVariable Long idBlog) {
+        return new ResponseEntity<>(commentMapper.toDto(commentService.findAllByBlog_Id(idBlog)), HttpStatus.OK);
     }
 
     @GetMapping("/count/{idBlog}")
