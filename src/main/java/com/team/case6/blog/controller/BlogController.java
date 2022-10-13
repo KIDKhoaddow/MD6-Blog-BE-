@@ -87,6 +87,15 @@ public class BlogController {
         if (!blog.isPresent() || !blog.get().getBlogStatus().isConfirm()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        Long numberLike = likeService.getCountLikeByBlogId(blog.get().getId());
+        Long numberComment = commentService.getCountCommentByBlogId(blog.get().getId());
+        if (numberLike != null) {
+            blog.get().setCountLike(numberLike);
+        } else {
+            blog.get().setCountLike(0L);
+        }
+        blog.get().setCountComment(numberComment);
+        blogService.save(blog.get());
         return new ResponseEntity<>(blogMapper.toDto(blog.get()), HttpStatus.OK);
     }
 

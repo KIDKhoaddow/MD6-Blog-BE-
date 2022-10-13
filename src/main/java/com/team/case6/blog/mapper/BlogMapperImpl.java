@@ -2,6 +2,8 @@ package com.team.case6.blog.mapper;
 
 import com.team.case6.blog.model.DTO.BlogDTO;
 import com.team.case6.blog.model.entity.Blog;
+import com.team.case6.comment.service.ICommentService;
+import com.team.case6.like.service.ILikeService;
 import com.team.case6.tag.mapper.ITagMapper;
 import com.team.case6.tag.service.ITagService;
 import org.modelmapper.ModelMapper;
@@ -21,6 +23,12 @@ public class BlogMapperImpl implements IBlogMapper {
     @Autowired
     private ITagService tagService;
 
+    @Autowired
+    private ILikeService likeService;
+
+    @Autowired
+    private ICommentService commentService;
+
     @Override
     public Blog toEntity(BlogDTO dto) {
         return modelMapper.map(dto, Blog.class);
@@ -35,6 +43,10 @@ public class BlogMapperImpl implements IBlogMapper {
         blogDTO.setAvatar(entity.getUserInfo().getAvatar());
         blogDTO.setUsername(entity.getUserInfo().getName());
         blogDTO.setTag(tagMapper.toDto(tagService.findAllByBlog(entity)));
+        Long numberLike = likeService.getCountLikeByBlogId(entity.getId());
+        Long numberComment = commentService.getCountCommentByBlogId(entity.getId());
+        blogDTO.setCountComment(numberComment);
+        blogDTO.setCountLike(numberLike);
         return blogDTO;
     }
 

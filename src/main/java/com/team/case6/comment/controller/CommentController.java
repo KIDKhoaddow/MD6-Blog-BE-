@@ -71,6 +71,8 @@ public class CommentController {
         comment.setCreateAt(getUpdateAt());
         comment.setCommentParent(parentComment.get());
         commentService.save(comment);
+        blog.get().setCountComment(blog.get().getCountComment()+1L);
+        blogService.save(blog.get());
         return new ResponseEntity<>(comment, HttpStatus.OK);
     }
 
