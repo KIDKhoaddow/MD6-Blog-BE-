@@ -39,6 +39,8 @@ public class CommentMapperImpl implements ICommentMapper {
         if (!optionalUserInfo.isPresent()) {
             return null;
         }
+        blogOptional.get().setCountComment(blogOptional.get().getCountComment()+1L);
+        blogService.save(blogOptional.get());
         comment.setUserInfo(optionalUserInfo.get());
         return comment;
     }

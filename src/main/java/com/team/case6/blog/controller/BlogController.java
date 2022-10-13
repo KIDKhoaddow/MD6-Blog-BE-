@@ -108,6 +108,17 @@ public class BlogController {
 
     @GetMapping("/public")
     public ResponseEntity<List<BlogDTO>> getListBlogPublic() {
+        for (Blog element : blogService.findBlogPublic()) {
+            Long numberLike = likeService.getCountLikeByBlogId(element.getId());
+            Long numberComment = commentService.getCountCommentByBlogId(element.getId());
+            if (numberLike != null) {
+                element.setCountLike(numberLike);
+            } else {
+                element.setCountLike(0L);
+            }
+            element.setCountComment(numberComment);
+            blogService.save(element);
+        }
         return new ResponseEntity<>(blogMapper.toDto(blogService.findBlogPublic()), HttpStatus.OK);
     }
 
