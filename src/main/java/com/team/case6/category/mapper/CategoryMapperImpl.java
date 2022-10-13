@@ -21,7 +21,7 @@ public class CategoryMapperImpl implements ICategoryMapper {
     private ModelMapper modelMapper;
     @Autowired
     private ITagMapper iTagMapper;
-
+@Autowired
     private ITagService tagService;
 
     @Override

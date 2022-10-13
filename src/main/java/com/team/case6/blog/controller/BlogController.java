@@ -279,6 +279,23 @@ public class BlogController {
         blogStatusService.save(blogStatus);
         blogService.save(blogOptional.get());
 
+        Category category = categorySV.findById(blog.getCategoryId()).get();
+
+        for (TagDTO element : blog.getTag()) {
+            Optional<Tag> tag = tagService.findByName(element.getName());
+            if (tag.isPresent()) {
+                tag.get().getBlog().add(blogOptional.get());
+                tag.get().getCategory().add(category);
+                tagService.save(tag.get());
+            } else {
+                Tag newTag = new Tag();
+                newTag.getBlog().add(blogOptional.get());
+                newTag.getCategory().add(category);
+                newTag.setName(element.getName());
+                tagService.save(newTag);
+            }
+        }
+
 
         return new ResponseEntity<>(blog, HttpStatus.OK);
     }
