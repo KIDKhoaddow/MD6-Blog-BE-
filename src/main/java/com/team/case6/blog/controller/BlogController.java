@@ -20,6 +20,7 @@ import com.team.case6.like.service.ILikeService;
 import com.team.case6.core.service.userInfo.IUserInfoService;
 import com.team.case6.tag.model.Tag;
 import com.team.case6.tag.model.TagDTO;
+import com.team.case6.tag.repository.ITagRepo;
 import com.team.case6.tag.service.ITagService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,9 @@ public class BlogController {
 
     @Autowired
     private ITagService tagService;
+
+    @Autowired
+    private ITagRepo tagRepo;
 
     @Value("${file-upload-system}")
     private String uploadPathSystem;
@@ -300,23 +304,44 @@ public class BlogController {
         blogService.save(blogOptional.get());
 
         Category category = categorySV.findById(blog.getCategoryId()).get();
-
-        for (TagDTO element : blog.getTag()) {
-            Optional<Tag> tag = tagService.findByName(element.getName());
-            if (tag.isPresent()) {
-                tag.get().getBlog().add(blogOptional.get());
-                tag.get().getCategory().add(category);
-                tagService.save(tag.get());
-            } else {
-                Tag newTag = new Tag();
-                newTag.getBlog().add(blogOptional.get());
-                newTag.getCategory().add(category);
-                newTag.setName(element.getName());
-                tagService.save(newTag);
+        Set<Tag> tags = new HashSet<>();
+        if(!blog.getTag().isEmpty()){
+            for (TagDTO element : blog.getTag()) {
+                Optional<Tag> tag = tagService.findByName(element.getName());
+                if (tag.isPresent()) {
+                    if (!tagService.findAllByBlog(blogOptional.get()).contains(tag.get())) {
+                        tag.get().getBlog().add(blogOptional.get());
+                        tag.get().getCategory().add(category);
+                        tagService.save(tag.get());
+                        tagRepo.flush();
+                    }else {
+                        tags.add(tag.get());
+                    }
+                } else {
+                    Tag newTag = new Tag();
+                    newTag.getBlog().add(blogOptional.get());
+                    newTag.getCategory().add(category);
+                    newTag.setName(element.getName());
+                    tagService.save(newTag);
+                    tagRepo.flush();
+                }
+            }
+        }else {
+            for (Tag element: tagService.findAllByBlog(blogOptional.get())) {
+                element.getBlog().remove(blogOptional.get());
+                tagService.save(element);
+                tagRepo.flush();
             }
         }
-
-
+        if (!tags.isEmpty()) {
+            for (Tag element : tagService.findAllByBlog(blogOptional.get())) {
+                if (!tags.contains(element)) {
+                    element.getBlog().remove(blogOptional.get());
+                    tagService.save(element);
+                    tagRepo.flush();
+                }
+            }
+        }
         return new ResponseEntity<>(blog, HttpStatus.OK);
     }
 
@@ -397,7 +422,7 @@ public class BlogController {
     }
 
     @DeleteMapping("/{idBlog}/{idUserInfo}")
-    public ResponseEntity<?> deleteByUserInfo(@PathVariable Long idBlog,@PathVariable Long idUserInfo) {
+    public ResponseEntity<?> deleteByUserInfo(@PathVariable Long idBlog, @PathVariable Long idUserInfo) {
         try {
             Optional<Blog> optionalBlog = blogService.findById(idBlog);
             if (!optionalBlog.isPresent()) {
@@ -428,11 +453,11 @@ public class BlogController {
                 }
             }
             blogService.removeById(idBlog);
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
             return new ResponseEntity<>(new ResponseMessage(false, "false to remove "), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(new ResponseMessage(true, "Delete complete"),HttpStatus.OK);
+        return new ResponseEntity<>(new ResponseMessage(true, "Delete complete"), HttpStatus.OK);
     }
 
     private String getUpdateAt() {
