@@ -213,8 +213,7 @@ public class BlogController {
     }
 
     @PostMapping("/{idUserInfo}")
-    public ResponseEntity<Blog> createBlog(@PathVariable Long idUserInfo, @RequestPart BlogDTO blogDTO
-            , @RequestPart("fileImage") MultipartFile multipartFile) {
+    public ResponseEntity<BlogDTO> createBlog(@PathVariable Long idUserInfo, @RequestBody BlogDTO blogDTO ){
         Optional<UserInfo> userInfo = userInfoService.findById(idUserInfo);
         if (!userInfo.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -238,7 +237,7 @@ public class BlogController {
         blog.setUserInfo(userInfo.get());
         blogService.save(blog);
 
-        return new ResponseEntity<>(blog, HttpStatus.CREATED);
+        return new ResponseEntity<>(blogDTO, HttpStatus.CREATED);
     }
 
     @PutMapping("/{idUserInfo}")
