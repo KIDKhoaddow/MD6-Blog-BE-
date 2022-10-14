@@ -69,6 +69,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
+        try{
+
+
         //Kiểm tra username và pass có đúng hay không
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
@@ -89,6 +92,9 @@ public class AuthController {
         userStatus.setStatus(Status.ONLINE);
         userStatusService.save(userStatus);
         return ResponseEntity.ok(new JwtResponse(currentUser.getId(), jwt, userDetails.getUsername(), userDetails.getAuthorities()));
+        }catch (Exception e){
+            return new ResponseEntity<>(new ResponseMessage(false, "Your password is not right"), HttpStatus.CONFLICT);
+        }
     }
 
     @PostMapping("/register")
