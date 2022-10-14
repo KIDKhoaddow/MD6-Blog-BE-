@@ -15,7 +15,7 @@ public interface ILikeService extends IGeneralService<Like> {
 
     List<Like> findAllByBlogId(Long blogId);
     List<LikesBlog> findCountLikeByBlogId(Long blogId);
-    void deleteLikeByBlogId(Long blogId);
+    void deleteLikeByBlog(Blog blog);
 
     List<LikeCount> findCount();
     Long getCountLikeByBlogId(Long blog_id);

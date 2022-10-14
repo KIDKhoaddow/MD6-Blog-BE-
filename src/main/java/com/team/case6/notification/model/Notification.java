@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @NoArgsConstructor
@@ -22,12 +23,5 @@ public class Notification {
     @ManyToOne
     private User user1;
 
-    @ManyToOne
-    private User user2;
-
-    public Notification(String content, User user1, User user2) {
-        this.content = content;
-        this.user1 = user1;
-        this.user2 = user2;
-    }
+    private Date createAt;
 }

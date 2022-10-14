@@ -3,6 +3,7 @@ package com.team.case6.comment.service;
 
 import com.team.case6.comment.model.Comment;
 import com.team.case6.comment.repository.ICommentRepo;
+import com.team.case6.like.model.Like;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,5 +42,20 @@ public class CommentServiceImpl implements ICommentService{
     @Override
     public Long getCountCommentByBlogId(Long blogId) {
         return commentRepo.countCommentByBlog_Id(blogId);
+    }
+
+    @Override
+    public void deleteBlog(Long blogId) {
+        List<Comment> comments = commentRepo.findAllByBlog_Id(blogId);
+        if (!comments.isEmpty()) {
+            for (Comment comment : comments) {
+                try {
+                    commentRepo.deleteById(comment.getId());
+                } catch (Exception e) {
+                    System.out.println(e);
+                    return;
+                }
+            }
+        }
     }
 }

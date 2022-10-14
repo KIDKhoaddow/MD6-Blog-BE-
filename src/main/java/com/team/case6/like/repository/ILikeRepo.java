@@ -25,7 +25,7 @@ public interface ILikeRepo extends JpaRepository<Like, Long> {
             "group by user_info_id ;", nativeQuery = true)
     List<LikesBlog> findCountLikeByBlogId(Long blogId);
 
-    void deleteLikeByBlogId(Long blogId);
+    void removeAllByBlog(Blog blog);
 
     @Query(value = "SELECT blogs.id as blogId ,count(likies.blog_id) as countL FROM case4.blogs" +
             " inner join case4.likies on likies.blog_id = blogs.id " +

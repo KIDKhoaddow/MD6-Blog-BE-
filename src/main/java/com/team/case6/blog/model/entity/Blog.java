@@ -36,7 +36,4 @@ public class Blog {
     private UserInfo userInfo;
     private Long countLike = 0L;
     private Long countComment=0L;
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "tag_blog")
-    private Set<Tag> tag = new HashSet<>();
 }

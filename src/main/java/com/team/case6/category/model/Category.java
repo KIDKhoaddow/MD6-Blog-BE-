@@ -22,9 +22,6 @@ public class Category {
     private String name;
     private String description;
     private String picture;
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "tag_category")
-    private Set<Tag> tag = new HashSet<>();
     private Long countBlog;
 
 }

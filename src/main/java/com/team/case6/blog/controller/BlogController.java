@@ -1,17 +1,16 @@
 package com.team.case6.blog.controller;
 
-import com.team.case6.blog.mapper.BlogMapperImpl;
+
 import com.team.case6.blog.mapper.IBlogMapper;
 import com.team.case6.blog.model.DTO.BlogDTO;
 import com.team.case6.blog.model.DTO.BlogDTORecentlyPerCategory;
 import com.team.case6.blog.model.DTO.BlogMostLike;
 import com.team.case6.blog.model.DTO.BlogsOfUser;
-import com.team.case6.category.model.CategoryDTO;
 import com.team.case6.comment.service.ICommentService;
-import com.team.case6.core.model.dto.PictureForm;
 import com.team.case6.blog.model.entity.Blog;
 import com.team.case6.blog.model.entity.BlogStatus;
 import com.team.case6.category.model.Category;
+import com.team.case6.core.model.dto.ResponseMessage;
 import com.team.case6.core.model.entity.Status;
 import com.team.case6.core.model.entity.UserInfo;
 import com.team.case6.blog.service.blog.IBlogService;
@@ -19,22 +18,16 @@ import com.team.case6.blog.service.blogStautus.IBlogStatusService;
 import com.team.case6.category.service.ICategoryService;
 import com.team.case6.like.service.ILikeService;
 import com.team.case6.core.service.userInfo.IUserInfoService;
+import com.team.case6.tag.model.Tag;
+import com.team.case6.tag.model.TagDTO;
+import com.team.case6.tag.service.ITagService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -58,6 +51,9 @@ public class BlogController {
     @Autowired
     private ICommentService commentService;
 
+    @Autowired
+    private ITagService tagService;
+
     @Value("${file-upload-system}")
     private String uploadPathSystem;
 
@@ -72,7 +68,11 @@ public class BlogController {
         for (Blog element : blogService.findAll()) {
             Long numberLike = likeService.getCountLikeByBlogId(element.getId());
             Long numberComment = commentService.getCountCommentByBlogId(element.getId());
-            element.setCountLike(numberLike);
+            if (numberLike != null) {
+                element.setCountLike(numberLike);
+            } else {
+                element.setCountLike(0L);
+            }
             element.setCountComment(numberComment);
             blogService.save(element);
         }
@@ -84,10 +84,19 @@ public class BlogController {
     @GetMapping("/{idBlog}")
     public ResponseEntity<BlogDTO> getBlogById(@PathVariable Long idBlog) {
         Optional<Blog> blog = blogService.findById(idBlog);
-        if(!blog.isPresent()){
-           return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (!blog.isPresent() || !blog.get().getBlogStatus().isConfirm()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(blogMapper.toDto(blog.get()),HttpStatus.OK);
+        Long numberLike = likeService.getCountLikeByBlogId(blog.get().getId());
+        Long numberComment = commentService.getCountCommentByBlogId(blog.get().getId());
+        if (numberLike != null) {
+            blog.get().setCountLike(numberLike);
+        } else {
+            blog.get().setCountLike(0L);
+        }
+        blog.get().setCountComment(numberComment);
+        blogService.save(blog.get());
+        return new ResponseEntity<>(blogMapper.toDto(blog.get()), HttpStatus.OK);
     }
 
     @GetMapping("/user/{idUser}")
@@ -98,8 +107,19 @@ public class BlogController {
     }
 
     @GetMapping("/public")
-    public ResponseEntity<List<Blog>> getListBlogPublic() {
-        return new ResponseEntity<>(blogService.findBlogPublic(), HttpStatus.OK);
+    public ResponseEntity<List<BlogDTO>> getListBlogPublic() {
+        for (Blog element : blogService.findBlogPublic()) {
+            Long numberLike = likeService.getCountLikeByBlogId(element.getId());
+            Long numberComment = commentService.getCountCommentByBlogId(element.getId());
+            if (numberLike != null) {
+                element.setCountLike(numberLike);
+            } else {
+                element.setCountLike(0L);
+            }
+            element.setCountComment(numberComment);
+            blogService.save(element);
+        }
+        return new ResponseEntity<>(blogMapper.toDto(blogService.findBlogPublic()), HttpStatus.OK);
     }
 
     @GetMapping("/public/category/{idCategory}")
@@ -121,19 +141,19 @@ public class BlogController {
     public ResponseEntity<List<Blog>> getTopTenBlogMostLike() {
         return new ResponseEntity<>(blogService.findAll().stream()
                 .sorted(Comparator.comparing(Blog::getCountLike).reversed())
-                .filter(blog -> blog.getBlogStatus().getStatus() == Status.PUBLIC)
+                .filter(blog -> blog.getBlogStatus().getStatus() == Status.PUBLIC && blog.getBlogStatus().isConfirm())
                 .limit(10)
                 .collect(Collectors.toList()), HttpStatus.OK);
     }
 
     @GetMapping("/public/most-like")
-    public ResponseEntity<BlogDTO> getTopBlogMostLike() {
+    public ResponseEntity<List<BlogDTO>> getTopBlogMostLike() {
         return new ResponseEntity<>(blogMapper
                 .toDto(blogService.findAll().stream()
                         .sorted(Comparator.comparing(Blog::getCountLike).reversed())
-                        .filter(blog -> blog.getBlogStatus().getStatus() == Status.PUBLIC)
+                        .filter(blog -> blog.getBlogStatus().getStatus() == Status.PUBLIC && blog.getBlogStatus().isConfirm())
                         .limit(1)
-                        .collect(Collectors.toList()).get(0)), HttpStatus.OK);
+                        .collect(Collectors.toList())), HttpStatus.OK);
     }
 
     @GetMapping("/public/most-like-per-category")
@@ -146,7 +166,7 @@ public class BlogController {
             if (blogsCategory.size() != 0)
                 blogs.add(blogsCategory.stream()
                         .sorted(Comparator.comparing(Blog::getCountLike).reversed())
-                        .filter(blog -> blog.getBlogStatus().getStatus() == Status.PUBLIC).limit(1)
+                        .filter(blog -> blog.getBlogStatus().getStatus() == Status.PUBLIC && blog.getBlogStatus().isConfirm()).limit(1)
                         .collect(Collectors.toList()).get(0));
         }
         return new ResponseEntity<>(blogs, HttpStatus.OK);
@@ -169,12 +189,13 @@ public class BlogController {
 
     @GetMapping("/public/three-new-blog-per-category")
     public ResponseEntity<List<BlogDTORecentlyPerCategory>> getThreeNewBlogsPerCategoryVer1() {
-        List<BlogDTORecentlyPerCategory> blogs =new ArrayList<>();
+        List<BlogDTORecentlyPerCategory> blogs = new ArrayList<>();
         for (Category category : categorySV.findAll()) {
             List<Blog> blogsCategory = blogService.findAllByCategory(category);
-            blogs.add( new BlogDTORecentlyPerCategory( category.getName(), new ArrayList<>()));
+            blogs.add(new BlogDTORecentlyPerCategory(category.getName(), new ArrayList<>()));
             if (blogsCategory.size() != 0) {
-                blogs.get(blogs.size()-1).setBlogs(blogMapper.toDto(blogsCategory.stream()
+
+                blogs.get(blogs.size() - 1).setBlogs(blogMapper.toDto(blogsCategory.stream()
                         .filter(blog -> blog.getBlogStatus().getStatus() == Status.PUBLIC)
                         .sorted(comparator)
                         .limit(3).collect(Collectors.toList())));
@@ -184,9 +205,8 @@ public class BlogController {
     }
 
 
-
     private Comparator<Blog> comparator = (c1, c2) -> {
-        return Integer.valueOf(LocalDate.parse(c2.getCreateAt()).getDayOfYear()).compareTo(LocalDate.parse(c1.getCreateAt()).getDayOfYear());
+        return Integer.compare(LocalDate.parse(c2.getCreateAt()).getDayOfYear(), LocalDate.parse(c1.getCreateAt()).getDayOfYear());
     };
 
     @GetMapping("/private")
@@ -213,13 +233,14 @@ public class BlogController {
     }
 
     @PostMapping("/{idUserInfo}")
-    public ResponseEntity<BlogDTO> createBlog(@PathVariable Long idUserInfo, @RequestBody BlogDTO blogDTO ){
+    public ResponseEntity<?> createBlog(@PathVariable Long idUserInfo, @RequestBody BlogDTO blogDTO) {
         Optional<UserInfo> userInfo = userInfoService.findById(idUserInfo);
         if (!userInfo.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ResponseMessage(false, "Not found user "), HttpStatus.NOT_FOUND);
         }
         Blog blog = new Blog();
         blogMapper.updateFromDTO(blogDTO, blog);
+        Category category = categorySV.findById(blogDTO.getCategoryId()).get();
         blog.setCategory(categorySV.findById(blogDTO.getCategoryId()).get());
 
 
@@ -232,55 +253,74 @@ public class BlogController {
         //Lưu vào database
 
         BlogStatus blogStatus = new BlogStatus();
-        blogStatusService.save(blogStatus);
+
         blog.setBlogStatus(blogStatus);
         blog.setUserInfo(userInfo.get());
+        blogStatusService.save(blogStatus);
         blogService.save(blog);
+        for (TagDTO element : blogDTO.getTag()) {
+            Optional<Tag> tag = tagService.findByName(element.getName());
+            if (tag.isPresent()) {
+                tag.get().getBlog().add(blog);
+                tag.get().getCategory().add(category);
+                tagService.save(tag.get());
+            } else {
+                Tag newTag = new Tag();
+                newTag.getBlog().add(blog);
+                newTag.getCategory().add(category);
+                newTag.setName(element.getName());
+                tagService.save(newTag);
+            }
+        }
 
-        return new ResponseEntity<>(blogDTO, HttpStatus.CREATED);
+
+        return new ResponseEntity<>(blog, HttpStatus.CREATED);
     }
 
     @PutMapping("/{idUserInfo}")
-    public ResponseEntity<Blog> updateBlog(@PathVariable Long idUserInfo, @RequestBody Blog blog
-            , @ModelAttribute PictureForm pictureForm) {
+    public ResponseEntity<BlogDTO> updateBlog(@PathVariable Long idUserInfo, @RequestBody BlogDTO blog) {
 
         Optional<UserInfo> userInfo = userInfoService.findById(idUserInfo);
         Optional<Blog> blogOptional = blogService.findById(blog.getId());
         if (!userInfo.isPresent() || !blogOptional.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
         BlogStatus blogStatus = blogOptional.get().getBlogStatus();
-        Category category = categorySV.findById(blog.getCategory().getId()).get();
+        Long countLike = blogOptional.get().getCountLike();
+        Long countComment = blogOptional.get().getCountComment();
+        blogMapper.updateFromDTO(blog, blogOptional.get());
 
-        //lưu ảnh truyền về
-        String image = "";
-        try {
-            if (pictureForm.getPicture() != null) {
-                MultipartFile multipartFile = pictureForm.getPicture();
-                FileCopyUtils.copy(multipartFile.getBytes(),
-                        new File(uploadPathBlog + image));
-            }
-        } catch (IOException e) {
-            image = blog.getPicture();
-            e.printStackTrace();
-        }
-        if (!image.equals("")) {
-            blogOptional.get().setPicture(image);
-        }
-
-        blogOptional.get().setTitle(blog.getTitle());
-        blogOptional.get().setCategory(category);
-        blogOptional.get().setContent(blog.getContent());
-        blogOptional.get().setDescribes(blog.getDescribes());
+        blogOptional.get().setCountComment(countComment);
+        blogOptional.get().setCountLike(countLike);
         blogStatus.setUpdateAt(getUpdateAt());
-        blogStatus.setStatus(blog.getBlogStatus().getStatus());
+
 
         blogStatusService.save(blogStatus);
         blogService.save(blogOptional.get());
+
+        Category category = categorySV.findById(blog.getCategoryId()).get();
+
+        for (TagDTO element : blog.getTag()) {
+            Optional<Tag> tag = tagService.findByName(element.getName());
+            if (tag.isPresent()) {
+                tag.get().getBlog().add(blogOptional.get());
+                tag.get().getCategory().add(category);
+                tagService.save(tag.get());
+            } else {
+                Tag newTag = new Tag();
+                newTag.getBlog().add(blogOptional.get());
+                newTag.getCategory().add(category);
+                newTag.setName(element.getName());
+                tagService.save(newTag);
+            }
+        }
+
+
         return new ResponseEntity<>(blog, HttpStatus.OK);
     }
 
-    @PatchMapping("/confirm/{id}")
+    @GetMapping("/confirm/{id}")
     public ResponseEntity<BlogStatus> confirmBlog(@PathVariable Long id) {
         BlogStatus blogStatus = blogStatusService.findById(id).get();
         //lưu lại thời gian update
@@ -291,7 +331,7 @@ public class BlogController {
         return new ResponseEntity<>(blogStatus, HttpStatus.OK);
     }
 
-    @PatchMapping("/ban/{id}")
+    @GetMapping("/ban/{id}")
     public ResponseEntity<BlogStatus> banBlog(@PathVariable Long id) {
         BlogStatus blogStatus = blogStatusService.findById(id).get();
         //lưu lại thời gian update
@@ -302,7 +342,7 @@ public class BlogController {
         return new ResponseEntity<>(blogStatus, HttpStatus.OK);
     }
 
-    @PatchMapping("/active/{id}")
+    @GetMapping("/active/{id}")
     public ResponseEntity<BlogStatus> activeBlog(@PathVariable Long id) {
         BlogStatus blogStatus = blogStatusService.findById(id).get();
         blogStatus.setVerify(true);
@@ -311,7 +351,7 @@ public class BlogController {
         return new ResponseEntity<>(blogStatus, HttpStatus.OK);
     }
 
-    @PatchMapping("/publicBlog/{id}")
+    @GetMapping("/publicBlog/{id}")
     public ResponseEntity<BlogStatus> publicBlog(@PathVariable Long id) {
         BlogStatus blogStatus = blogStatusService.findById(id).get();
         if (blogStatus.getStatus().equals(Status.PENDING)) {
@@ -324,7 +364,7 @@ public class BlogController {
         return new ResponseEntity<>(blogStatus, HttpStatus.OK);
     }
 
-    @PatchMapping("/privateBlog/{id}")
+    @GetMapping("/privateBlog/{id}")
     public ResponseEntity<BlogStatus> privateBlog(@PathVariable Long id) {
         BlogStatus blogStatus = blogStatusService.findById(id).get();
         if (blogStatus.getStatus().equals(Status.PENDING)) {
@@ -337,13 +377,62 @@ public class BlogController {
         return new ResponseEntity<>(blogStatus, HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete/{idBlog}")
-    public ResponseEntity<UserInfo> deleteByUserInfo(@PathVariable Long idBlog) {
-        BlogStatus blogStatus = blogService.findById(idBlog).get().getBlogStatus();
-        blogStatusService.removeById(blogStatus.getId());
-        likeService.deleteLikeByBlogId(idBlog);
-        blogService.removeById(idBlog);
-        return new ResponseEntity<>(HttpStatus.OK);
+    @GetMapping("/admitBlog/{idBlog}/{idUser}")
+    public ResponseEntity<BlogStatus> admitBlog(@PathVariable Long idBlog, @PathVariable Long idUser) {
+        Optional<BlogStatus> blogStatus = blogStatusService.findById(idBlog);
+        UserInfo userInfo = userInfoService.findByUserId(idUser);
+        if (!blogStatus.isPresent()) {
+            return new ResponseEntity<>(blogStatus.get(), HttpStatus.NOT_FOUND);
+        }
+        if (!blogStatus.get().isConfirm() && userInfo.getUser().getRoles().get(0).getName().equals("ROLE_ADMIN")) {
+            blogStatus.get().setConfirm(true);
+            blogStatus.get().setUpdateAt(getUpdateAt());
+            blogStatus.get().setStatus(Status.PUBLIC);
+            blogStatusService.save(blogStatus.get());
+            return new ResponseEntity<>(blogStatus.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(blogStatus.get(), HttpStatus.OK);
+        }
+
+    }
+
+    @DeleteMapping("/{idBlog}/{idUserInfo}")
+    public ResponseEntity<?> deleteByUserInfo(@PathVariable Long idBlog,@PathVariable Long idUserInfo) {
+        try {
+            Optional<Blog> optionalBlog = blogService.findById(idBlog);
+            if (!optionalBlog.isPresent()) {
+                return new ResponseEntity<>(new ResponseMessage(false, "Not found blog"), HttpStatus.NOT_FOUND);
+            }
+            Blog blog = optionalBlog.get();
+
+            Optional<UserInfo> optionalUserInfo = userInfoService.findById(idUserInfo);
+            if (!optionalUserInfo.isPresent()) {
+                return new ResponseEntity<>(new ResponseMessage(false, "Not found user"), HttpStatus.NOT_FOUND);
+            }
+            UserInfo userInfo = optionalUserInfo.get();
+            if (!blogService.existsByUserInfo(userInfo)) {
+                return new ResponseEntity<>(new ResponseMessage(false, "User is not author of Blog"), HttpStatus.NOT_FOUND);
+            }
+            BlogStatus blogStatus = blogService.findById(idBlog).get().getBlogStatus();
+            blogStatusService.removeById(blogStatus.getId());
+            likeService.deleteLikeByBlog(blog);
+            commentService.deleteBlog(idBlog);
+            List<Tag> tags = tagService.findAll();
+            if (!tags.isEmpty()) {
+                for (Tag element : tags) {
+                    if (element.getBlog().contains(blog)) {
+                        if (element.getBlog().remove(blog)) {
+                            tagService.save(element);
+                        }
+                    }
+                }
+            }
+            blogService.removeById(idBlog);
+        }catch (Exception e){
+            System.out.println(e);
+            return new ResponseEntity<>(new ResponseMessage(false, "false to remove "), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(new ResponseMessage(true, "Delete complete"),HttpStatus.OK);
     }
 
     private String getUpdateAt() {

@@ -33,6 +33,8 @@ public interface IBlogRepo extends JpaRepository<Blog, Long> {
     @Query(value = "SELECT t.post_id as blogId,t.user_name as username,t.post_title as Title,t.category_title as category,t.post_create_at as createAt ,t.count_like as countLike FROM  case4.top_ten_like_of_blog t", nativeQuery = true)
     List<BlogMostLike> findBlogsMostLike();
 
+    boolean existsByUserInfo(UserInfo userInfo);
+
 
 
 }
