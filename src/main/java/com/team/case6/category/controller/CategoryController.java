@@ -26,32 +26,34 @@ public class CategoryController {
 
     @GetMapping("")
     public ResponseEntity<List<CategoryDTO>> getListCategory() {
-        for (Category element: categorySV.findAll()) {
-            int numberBLog=blogService.findBlogPublicByCategory(element).size();
+        for (Category element : categorySV.findAll()) {
+            int numberBLog = blogService.findBlogPublicByCategory(element).size();
             element.setCountBlog(Long.parseLong(String.valueOf(numberBLog)));
             categorySV.save(element);
         }
         return new ResponseEntity<>(categoryMapper.toDto(categorySV.findAll()), HttpStatus.OK);
     }
+
     @GetMapping("/{idCategory}")
-    public ResponseEntity<Category> getCategory(@PathVariable Long idCategory) {
-        return new ResponseEntity<>(categorySV.findById(idCategory).get(), HttpStatus.OK);
+    public ResponseEntity<CategoryDTO> getCategory(@PathVariable Long idCategory) {
+        return new ResponseEntity<>(categoryMapper.toDto(categorySV.findById(idCategory).get()), HttpStatus.OK);
     }
 
     @PostMapping("")
-    public  ResponseEntity<Category> createCategory(@RequestBody Category category){
+    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
         categorySV.save(category);
-        return new ResponseEntity<>(category,HttpStatus.CREATED);
+        return new ResponseEntity<>(category, HttpStatus.CREATED);
     }
 
     @PutMapping("/{idCategory}")
-    public  ResponseEntity<Category> updateCategory(@RequestBody Category category , @ModelAttribute PictureForm pictureForm,
-                                                    @PathVariable Long idCategory){
+    public ResponseEntity<Category> updateCategory(@RequestBody Category category, @ModelAttribute PictureForm pictureForm,
+                                                   @PathVariable Long idCategory) {
         categorySV.save(category);
-        return new ResponseEntity<>(category,HttpStatus.CREATED);
+        return new ResponseEntity<>(category, HttpStatus.CREATED);
     }
+
     @DeleteMapping("/{idCategory}")
-    public  ResponseEntity<Boolean> deleteCategory(@PathVariable Long idCategory){
+    public ResponseEntity<Boolean> deleteCategory(@PathVariable Long idCategory) {
         categorySV.removeById(idCategory);
         return new ResponseEntity<>(HttpStatus.OK);
     }

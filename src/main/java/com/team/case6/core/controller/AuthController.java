@@ -67,6 +67,9 @@ public class AuthController {
     @Autowired
     private MailServiceImpl mailService;
 
+
+    private final String defaultAvatar="https://firebasestorage.googleapis.com/v0/b/uploadfile-4defc.appspot.com/o/profile.png?alt=media&token=ba82632b-b290-43ca-8a70-a9b02de051d7";
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         try{
@@ -115,7 +118,9 @@ public class AuthController {
 //            message.setResult(false);
 //            return new ResponseEntity<>(message, HttpStatus.FOUND);
 //        }
+
         SignUpForm signUpForm=signUpFormService.registerNewUser(user);
+        signUpForm.setAvatar(defaultAvatar);
         final String token = UUID.randomUUID().toString();
 
         signUpFormService.createVerificationTokenForUser(signUpForm, token);
