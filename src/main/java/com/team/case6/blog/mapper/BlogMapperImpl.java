@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class BlogMapperImpl implements IBlogMapper {
@@ -67,6 +69,15 @@ public class BlogMapperImpl implements IBlogMapper {
         }
         return blogs;
 
+    }
+
+    @Override
+    public Set<BlogDTO> toDtoSet(Set<Blog> entityList) {
+        Set<BlogDTO> blogs = new HashSet<>();
+        for (Blog element : entityList) {
+            blogs.add(toDto(element));
+        }
+        return blogs;
     }
 
     @Override

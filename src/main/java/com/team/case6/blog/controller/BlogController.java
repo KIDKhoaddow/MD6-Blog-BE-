@@ -85,6 +85,17 @@ public class BlogController {
         return new ResponseEntity<>(blogService.findAll(), HttpStatus.OK);
     }
 
+    @GetMapping("/tag/{idTag}")
+    public ResponseEntity<?> getBlogByTag(@PathVariable Long idTag) {
+        Optional<Tag> tagOptional = tagService.findById(idTag);
+        if (!tagOptional.isPresent()) {
+            return new ResponseEntity<>(new ResponseMessage(false, "Not Found Tag"), HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(blogMapper.toDtoSet(tagOptional.get().getBlog())
+                .stream().filter(blogDTO -> blogDTO.getStatus().equals(Status.PUBLIC))
+                .collect(Collectors.toList()), HttpStatus.OK);
+    }
+
     @GetMapping("/{idBlog}")
     public ResponseEntity<BlogDTO> getBlogById(@PathVariable Long idBlog) {
         Optional<Blog> blog = blogService.findById(idBlog);
@@ -305,7 +316,7 @@ public class BlogController {
 
         Category category = categorySV.findById(blog.getCategoryId()).get();
         Set<Tag> tags = new HashSet<>();
-        if(!blog.getTag().isEmpty()){
+        if (!blog.getTag().isEmpty()) {
             for (TagDTO element : blog.getTag()) {
                 Optional<Tag> tag = tagService.findByName(element.getName());
                 if (tag.isPresent()) {
@@ -314,7 +325,7 @@ public class BlogController {
                         tag.get().getCategory().add(category);
                         tagService.save(tag.get());
                         tagRepo.flush();
-                    }else {
+                    } else {
                         tags.add(tag.get());
                     }
                 } else {
@@ -326,8 +337,8 @@ public class BlogController {
                     tagRepo.flush();
                 }
             }
-        }else {
-            for (Tag element: tagService.findAllByBlog(blogOptional.get())) {
+        } else {
+            for (Tag element : tagService.findAllByBlog(blogOptional.get())) {
                 element.getBlog().remove(blogOptional.get());
                 tagService.save(element);
                 tagRepo.flush();
