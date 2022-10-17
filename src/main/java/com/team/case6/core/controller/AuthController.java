@@ -70,25 +70,31 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         //Kiểm tra username và pass có đúng hay không
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        //Lưu user đang đăng nhập vào trong context của security
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
-        String jwt = jwtService.generateTokenLogin(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User currentUser = userService.findByUserName(user.getUsername());
-        UserInfo userInfo = userInfoService.findByUserId(currentUser.getId());
-        UserStatus userStatus = userInfo.getUserStatus();
-        if (!userStatus.isVerify()) {
-            return new ResponseEntity<>(new ResponseMessage(false, "You are banned by Admin"), HttpStatus.LOCKED);
+            //Lưu user đang đăng nhập vào trong context của security
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            String jwt = jwtService.generateTokenLogin(authentication);
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            User currentUser = userService.findByUserName(user.getUsername());
+            UserInfo userInfo = userInfoService.findByUserId(currentUser.getId());
+            UserStatus userStatus = userInfo.getUserStatus();
+            if (!userStatus.isVerify()) {
+                return new ResponseEntity<>(new ResponseMessage(false, "You are banned by Admin"), HttpStatus.LOCKED);
+            }
+            if (userStatus.getStatus().equals(Status.ONLINE)) {
+                return new ResponseEntity<>(new ResponseMessage(false, "This account are Login already"), HttpStatus.CONFLICT);
+            }
+            userStatus.setStatus(Status.ONLINE);
+            userStatusService.save(userStatus);
+
+            return ResponseEntity.ok(new JwtResponse(currentUser.getId(), jwt, userDetails.getUsername(), userDetails.getAuthorities()));
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ResponseMessage(false, "Your password is not right"), HttpStatus.CONFLICT);
         }
-        if(userStatus.getStatus().equals(Status.ONLINE)){
-            return new ResponseEntity<>(new ResponseMessage(false, "This account are Login already"), HttpStatus.CONFLICT);
-        }
-        userStatus.setStatus(Status.ONLINE);
-        userStatusService.save(userStatus);
-        return ResponseEntity.ok(new JwtResponse(currentUser.getId(), jwt, userDetails.getUsername(), userDetails.getAuthorities()));
     }
 
     @PostMapping("/register")
@@ -109,7 +115,7 @@ public class AuthController {
 //            message.setResult(false);
 //            return new ResponseEntity<>(message, HttpStatus.FOUND);
 //        }
-        SignUpForm signUpForm=signUpFormService.registerNewUser(user);
+        SignUpForm signUpForm = signUpFormService.registerNewUser(user);
         final String token = UUID.randomUUID().toString();
 
         signUpFormService.createVerificationTokenForUser(signUpForm, token);
@@ -119,7 +125,6 @@ public class AuthController {
         message.setResult(true);
         return new ResponseEntity<>(message, HttpStatus.CREATED);
     }
-
 
 
     @PostMapping("/changePassword/{id}")
@@ -145,6 +150,7 @@ public class AuthController {
         this.userService.save(user.get());
         return new ResponseEntity<>(user.get(), HttpStatus.OK);
     }
+
     @GetMapping("/token/verify")
     public ResponseEntity<?> confirmRegistration(@NotEmpty @RequestParam String token) {
         final String result = signUpFormService.validateVerificationToken(token);
